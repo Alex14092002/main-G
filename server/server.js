@@ -24,9 +24,9 @@ dbConnect();
 initRoutes(app);
 
 app.use("/", (req, res) => {
-  res.send(`Server running`);
+  console.log(`Server running`);
 });
 
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`.bgGreen.white);
+  console.log(`Server running on port ${port}`);
 });

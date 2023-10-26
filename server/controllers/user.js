@@ -1,6 +1,7 @@
 const User = require("../models/user.js");
 const Product = require("../models/product.js");
 const asyncHandler = require("express-async-handler");
+
 const {
   tokenGeneration,
   tokenRefreshGeneration,
@@ -9,28 +10,6 @@ const jwt = require("jsonwebtoken");
 const sendMail = require("../utils/sendMail.js");
 const crypto = require("crypto");
 const createToken = require("uniqid");
-
-// const registerUser = asyncHandler(async (req, res) => {
-//   const { email, password, firstName, lastName } = req.body;
-//   if (!email || !password || !firstName || !lastName) {
-//     return res.status(400).json({
-//       success: false,
-//       message: "Missing value",
-//     });
-//   }
-
-//   const user = await User.findOne({ email });
-//   if (user) {
-//     throw new Error("User already exist");
-//   } else {
-//     const newUser = await User.create(req.body);
-//     return res.status(200).json({
-//       success: newUser ? true : false,
-//       message: newUser ? "Register successful" : "Something go wrong",
-//     });
-//   }
-// });
-
 const registerUser = asyncHandler(async (req, res) => {
   const { email, password, firstName, lastName, mobile } = req.body;
   if (!email || !password || !firstName || !lastName || !mobile) {
@@ -106,26 +85,6 @@ const registerCheck = asyncHandler(async (req, res) => {
       ? "Complete create account, go to login"
       : "Register check fail",
   });
-  // if (!cookie || cookie?.registerData?.token !== token) {
-  //   res.clearCookie("registerData");
-  //   return res.redirect(`${process.env.CLIENT_URL}/last-register/fail`);
-  // }
-
-  // const newUser = await User.create({
-  //   email: cookie?.registerData?.email,
-  //   password: cookie?.registerData?.password,
-  //   mobile: cookie?.registerData?.mobile,
-  //   firstName: cookie?.registerData?.firstName,
-  //   lastName: cookie?.registerData?.lastName,
-  // });
-
-  // res.clearCookie("registerData");
-
-  // if (newUser) {
-  //   return res.redirect(`${process.env.CLIENT_URL}/last-register/success`);
-  // } else {
-  //   return res.redirect(`${process.env.CLIENT_URL}/last-register/fail`);
-  // }
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -436,6 +395,41 @@ const addProductIntoUserCart = asyncHandler(async (req, res) => {
   }
 });
 
+const addWishProduct = asyncHandler(async (req, res) => {
+  const productId = req.params.productId;
+  const product = await Product.findById(productId);
+  const user = req.user;
+
+    // Kiểm tra xem sản phẩm có tồn tại không
+  
+    if (!product) {
+      return res.status(404).json({ message: 'Sản phẩm không tồn tại' });
+    }
+
+    // Kiểm tra xem người dùng đã được xác thực qua token JWT
+    if (!user) {
+      return res.status(401).json({ message: 'Người dùng chưa được xác thực' });
+    }
+
+    // Tìm người dùng dựa trên thông tin trong token JWT
+    const userId = user._id;
+
+    // Tìm người dùng và kiểm tra xem sản phẩm đã có trong danh sách mong muốn chưa
+    const userS = await User.findById(userId);
+    const wishList = userS.wishlist
+    // Kiểm tra xem sản phẩm đã có trong danh sách mong muốn của người dùng chưa
+    const isProductInWishlist = userS.wishlist.some(item => item.product === productId);
+    if (!isProductInWishlist) {
+      // Nếu sản phẩm chưa có trong danh sách yêu thích, thêm vào wishlist
+      wishList.push({  product });
+      await userS.save();
+    }
+    res.status(200).json({
+      wishList
+    });
+ 
+});
+
 const removeProductFromCart = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   const { pid } = req.params;
@@ -488,4 +482,5 @@ module.exports = {
   registerCheck,
   adminCreateUser,
   removeProductFromCart,
+  addWishProduct,
 };

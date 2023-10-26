@@ -5,7 +5,6 @@ const upload = require("../config/cloudinary.config.js");
 
 router.post("/register", controllers.registerUser);
 router.post("/mock", controllers.adminCreateUser);
-
 router.put("/register-confirm/:token", controllers.registerCheck);
 router.post("/login", controllers.loginUser);
 router.get("/current", verifyLoginToken, controllers.getUser);
@@ -15,6 +14,7 @@ router.post("/forgotpassword", controllers.forgotPassword);
 router.put("/resetpassword", controllers.resetPassword);
 router.put("/address", [verifyLoginToken], controllers.updateUserAddress);
 router.put("/cart", [verifyLoginToken], controllers.addProductIntoUserCart);
+router.post("/withlist/:productId", [verifyLoginToken], controllers.addWishProduct);
 router.delete(
   "/remove-product/:pid",
   [verifyLoginToken],
