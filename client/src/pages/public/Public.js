@@ -8,44 +8,18 @@ import {
   Navigation,
   UpperHeader,
 } from "../../components";
+import { useNavigate } from "react-router-dom";
 
 const Public = () => {
   const [search ,setSearch ] = useState(null)
   const [productSearch, setProductSearch] = useState(null);
-
+  const navigate = useNavigate(); 
   const handleSearch = async () =>{
-     
-    try {
-      if (search) {
-        const data = {
-          searchProduct: search,
-        };
-  
-        const response = await fetch("http://localhost:5000/api/search/searchproduct", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        });
-  
-        if (response.ok) {
-          const result = await response.json();
-         
-          setProductSearch(result);
-         
-        } else {
-          console.error("Yêu cầu không thành công.");
-        }
-      } else {
-        console.error("Không tìm thấy giá trị 'keySearch' trong localStorage.");
-      }
-    } catch (error) {
-      console.error("Lỗi khi thực hiện yêu cầu: ", error);
-    }
-
+   console.log(search);
+    sessionStorage.setItem('keysearch' , search)
+    window.location.href = 'http://localhost:3000/search'
+    // navigate(`/search`);
   }
-  console.log(productSearch);
 
   return (
     <>
@@ -54,7 +28,7 @@ const Public = () => {
         <Header setSearch={setSearch} handleSearch={handleSearch}  />
         <Navigation />
         <div className="w-full flex flex-col items-center bg-webBackground py-4">
-          <Outlet productSearch={productSearch}  />
+          <Outlet search={search}  />
         </div>
         <Footer />
         <MobileToolbar />

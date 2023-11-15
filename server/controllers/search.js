@@ -1,15 +1,15 @@
 const Product = require('../models/product');
 
 const searchProduct = async (req, res) => {
-    const searchQuery = req.body.searchProduct; // Lấy giá trị từ body
+    const searchQuery = req.params.searchProduct; // Lấy giá trị từ tham số URL
     try {
         const products = await Product.find({ title: { $regex: searchQuery, $options: 'i' } });
-      res.json(products);
+        res.json(products);
     } catch (err) {
-      res.status(500).json({ error: 'Lỗi tìm kiếm sản phẩm.' });
+        res.status(500).json({ error: 'Lỗi tìm kiếm sản phẩm.' });
     }
-  };
-  
-  module.exports = {
+};
+
+module.exports = {
     searchProduct,
-  };
+};

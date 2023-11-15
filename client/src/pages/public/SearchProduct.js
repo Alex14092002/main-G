@@ -10,31 +10,37 @@ const breakpointColumnsObj = {
   300: 2,
 };
 
-const SearchProduct = ({productSearch}) => {
+const SearchProduct = ({search}) => {
  
- 
-    console.log(productSearch);
-  
-  const [products, setProducts] = useState(null);
+  const [keysearch , setkeysearch] = useState(sessionStorage.getItem("keysearch"))
+  const [products, setProducts] = useState([]);
   const fetchProduct = async () => {
-    
+    const res = await fetch(
+      `http://localhost:5001/api/search/searchproduct/${keysearch}`
+    );
+    const data = await res.json();
+    console.log(data);
+    setProducts(data);
   };
-  
-  
+
+  console.log(products);
 
   useEffect(() => {
     fetchProduct();
-  }, []);
+    console.log("keysearch changed:", keysearch);
+  }, [keysearch]);
 
+  
   return (
     <div className="w-[calc(100%-20px)] md:w-main bg-white rounded">
+      <h2 className="text-center text-xl py-3">Kết quả tìm kiếm cho từ khoá <strong className="text-[#ff0000]">{keysearch}</strong> </h2>
       <Masonry
         breakpointCols={breakpointColumnsObj}
         className="my-masonry-grid flex mb-[20px]"
         columnClassName="my-masonry-grid_column "
       >
-        {products?.products?.map((element) => (
-          <Product key={element._id} pid={element.id} productData={element} />
+        {products.map((product) => (
+          <Product key={product._id} pid={product.id} productData={product} />
         ))}
       </Masonry>
     </div>

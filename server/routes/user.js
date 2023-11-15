@@ -14,12 +14,13 @@ router.post("/forgotpassword", controllers.forgotPassword);
 router.put("/resetpassword", controllers.resetPassword);
 router.put("/address", [verifyLoginToken], controllers.updateUserAddress);
 router.put("/cart", [verifyLoginToken], controllers.addProductIntoUserCart);
-router.post("/withlist/:productId", [verifyLoginToken], controllers.addWishProduct);
+router.post("/wishlist/:uid/:pid",   controllers.addProductToWishlist);
 router.delete(
   "/remove-product/:pid",
   [verifyLoginToken],
   controllers.removeProductFromCart
 );
+
 
 router.get("/", controllers.getAllUsers); //[verifyLoginToken, isAdmin],
 router.delete("/:uid", [verifyLoginToken, isAdmin], controllers.deleteUser);

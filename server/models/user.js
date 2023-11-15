@@ -1,7 +1,6 @@
 const mongoose = require("mongoose"); // Erase if already required
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
-
 // Declare the Schema of the Mongo model
 var userSchema = new mongoose.Schema(
   {
@@ -47,6 +46,11 @@ var userSchema = new mongoose.Schema(
       type: String,
     },
     wishlist: [
+      {
+        product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+      },
+    ],
+    recomment: [
       {
         product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
       },

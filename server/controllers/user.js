@@ -88,6 +88,7 @@ const registerCheck = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
+  
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({
@@ -394,41 +395,47 @@ const addProductIntoUserCart = asyncHandler(async (req, res) => {
     });
   }
 });
+// Trong mã nguồn điều khiển
+const addProductToWishlist = asyncHandler(async (req, res) => {
+  const { _id } = req.params;
+  const { pid } = req.params;
 
-const addWishProduct = asyncHandler(async (req, res) => {
-  const productId = req.params.productId;
-  const product = await Product.findById(productId);
-  const user = req.user;
+  if (!pid) {
+    return res.status(400).json({ success: false, message: 'Missing product ID' });
+  }
 
-    // Kiểm tra xem sản phẩm có tồn tại không
-  
-    if (!product) {
-      return res.status(404).json({ message: 'Sản phẩm không tồn tại' });
-    }
+  try {
+    const user = await User.findById(_id).select('wishlist recomment');
 
-    // Kiểm tra xem người dùng đã được xác thực qua token JWT
     if (!user) {
-      return res.status(401).json({ message: 'Người dùng chưa được xác thực' });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Tìm người dùng dựa trên thông tin trong token JWT
-    const userId = user._id;
+    const isProductInWishlist = user.wishlist.some((item) => item.product.toString() === pid);
 
-    // Tìm người dùng và kiểm tra xem sản phẩm đã có trong danh sách mong muốn chưa
-    const userS = await User.findById(userId);
-    const wishList = userS.wishlist
-    // Kiểm tra xem sản phẩm đã có trong danh sách mong muốn của người dùng chưa
-    const isProductInWishlist = userS.wishlist.some(item => item.product === productId);
-    if (!isProductInWishlist) {
-      // Nếu sản phẩm chưa có trong danh sách yêu thích, thêm vào wishlist
-      wishList.push({  product });
-      await userS.save();
+    if (isProductInWishlist) {
+      return res.status(400).json({ success: false, message: 'Product already in wishlist' });
     }
-    res.status(200).json({
-      wishList
-    });
- 
+
+    user.wishlist.push({ product: pid });
+
+    // Cập nhật lại trường recomment
+    const wishlistProductNames = user.wishlist.map(item => item.product.title); // Giả sử có trường 'name' trong Product
+    const randomRecommendedProducts = await Product.aggregate([
+      { $match: { title: { $in: wishlistProductNames } } },
+      { $sample: { size: 10 } },
+    ]);
+
+    user.recomment = randomRecommendedProducts.map(product => ({ product: product._id }));
+
+    await user.save();
+
+    return res.status(200).json({ success: true, message: 'Product added to wishlist' });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
 });
+
 
 const removeProductFromCart = asyncHandler(async (req, res) => {
   const { _id } = req.user;
@@ -482,5 +489,5 @@ module.exports = {
   registerCheck,
   adminCreateUser,
   removeProductFromCart,
-  addWishProduct,
+  addProductToWishlist,
 };
